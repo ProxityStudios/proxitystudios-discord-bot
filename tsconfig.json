@@ -23,9 +23,6 @@
     "noImplicitThis": false,
     "esModuleInterop": false,
     "strictNullChecks": false,
-    "types": [
-      "types"
-    ]
   },
   "include": [
     "src/**/*"

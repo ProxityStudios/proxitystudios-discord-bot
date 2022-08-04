@@ -1,4 +1,5 @@
 import {
+	ActivityType,
 	ChannelType,
 	Client,
 	GatewayIntentBits,
@@ -10,6 +11,7 @@ import {
 } from "discord.js";
 import "dotenv/config";
 import { AppDataSource } from "./database";
+import { Ticket } from "./database/entities/Ticket";
 import { buttonCommandInteraction } from "./interactions/button-command";
 import { chatInputCommandInteraction } from "./interactions/chat-input-command";
 import { ChatInputCommands, CustomEvents } from "./types";
@@ -36,7 +38,17 @@ const commands: RESTPostAPIApplicationCommandsJSONBody[] = [
 		.toJSON(),
 ];
 
-client.on("ready", () => console.log(`${client.user?.tag} logged in`));
+const ticketRepository = AppDataSource.getRepository(Ticket);
+
+client.on("ready", async () => {
+	console.log(`${client.user.tag} logged in. Ready`)
+
+	const [, totalTickets] = await ticketRepository.findAndCount();
+	const [, activeTickets] = await ticketRepository.findAndCountBy({ status: "opened" });
+	const [, closedTickets] = await ticketRepository.findAndCountBy({ status: "closed" });
+
+	client.user.setActivity({ name: `Tickets(${totalTickets}): ${activeTickets} active, ${closedTickets} closed`, type: ActivityType.Listening })
+});
 
 client.on("interactionCreate", async (interaction) => {
 	if (interaction.isChatInputCommand())
@@ -51,10 +63,17 @@ client.on(CustomEvents.BUTTON_COMMAND_INTERACTION, buttonCommandInteraction);
 async function main() {
 	try {
 		await AppDataSource.initialize();
+		console.log("Database initialized")
+
+		console.log("Contacting to client")
 		await client.login(DISCORD_APP_TOKEN);
+
+		console.log("ApplicationGuildCommands: Commands registering...")
 		await rest.put(Routes.applicationGuildCommands(client.user.id, DISCORD_ORG_GUILD_ID), {
 			body: commands,
 		});
+		console.log("ApplicationGuildCommands: Commands registered.")
+
 	} catch (err) {
 		console.error(err);
 	}

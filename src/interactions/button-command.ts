@@ -103,7 +103,7 @@ export async function buttonCommandInteraction(
 					console.log("Updated Ticket Values");
 
 					await interaction.reply({
-						content: `Ticket Created! (${newTicketChannel})`,
+						content: `Ticket Created! (${newTicketChannel}/#${newTicketChannel.name})`,
 						ephemeral: true,
 					});
 				}
@@ -121,7 +121,7 @@ export async function buttonCommandInteraction(
 
 			if (user.id !== ticket.createdBy) {
 				await interaction.reply({
-					content: "You do not have permission to close this ticket!",
+					content: "You don't have permission to close this ticket!",
 					ephemeral: true,
 				});
 				return;
@@ -130,6 +130,7 @@ export async function buttonCommandInteraction(
 			if (user.id === ticket.createdBy) {
 				console.log("User who created ticket is now trying to close it...");
 				await ticketRepository.update({ id: ticket.id }, { status: "closed" });
+
 				await channel.edit({
 					permissionOverwrites: [
 						{
@@ -150,10 +151,10 @@ export async function buttonCommandInteraction(
 				await interaction.update({
 					components: [
 						new ActionRowBuilder<ButtonBuilder>().setComponents(
-							new ButtonBuilder()
-								.setCustomId(ButtonCommands.CREATE_TRANSCRIPT)
-								.setStyle(ButtonStyle.Secondary)
-								.setLabel("Create Transcript"),
+							// new ButtonBuilder()
+							// 	.setCustomId(ButtonCommands.CREATE_TRANSCRIPT)
+							// 	.setStyle(ButtonStyle.Secondary)
+							// 	.setLabel("Create Transcript"),
 							new ButtonBuilder()
 								.setCustomId(ButtonCommands.CLOSE_TICKET_CHANNEL)
 								.setStyle(ButtonStyle.Secondary)
@@ -174,13 +175,13 @@ export async function buttonCommandInteraction(
 
 			if (!interaction.memberPermissions.has(PermissionsBitField.Flags.Administrator)) {
 				await interaction.reply({
-					content: "You do not have permission to close this ticket!",
+					content: "You don't have permission to close this ticket!",
 					ephemeral: true,
 				});
 				return;
 			}
 
-			await interaction.reply({ content: "Channel closing..." });
+			await interaction.reply({ content: "The channel closing..." });
 			await channel.delete("User request");
 			break;
 		}
